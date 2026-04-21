@@ -1,0 +1,32 @@
+:root {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at center, #1b1b2f, #101018);
+  color: #fff;
+}
+
+.container {
+  text-align: center;
+}
+
+button {
+  margin-top: 0.75rem;
+  padding: 0.6rem 1.25rem;
+  border: 0;
+  border-radius: 999px;
+  background: #6a5cff;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:hover {
+  filter: brightness(1.1);
+}
