@@ -1,0 +1,139 @@
+<html>
+
+<head>
+    <title>Mine - Music Visualizer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="drop-screen">
+  <h1>VISUALIZER</h1>
+  <div id="drop-zone">
+    <div class="dz-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+      </svg>
+    </div>
+    <span class="dz-label">Drop an audio file here, or click to browse</span>
+    <span class="dz-sub">MP3 · WAV · OGG · FLAC · M4A</span>
+  </div>
+  <input type="file" id="file-input" accept="audio/*">
+</div>
+ 
+<div id="viz-screen">
+  <div id="info-bar">
+    <div id="track-name">—</div>
+    <div id="stats">
+      <span>MODE <b id="s-mode">—</b></span>
+      <span>BARS <b id="s-bars">128</b></span>
+      
+      <span>FREQ <b id="s-freq">—</b></span>
+      <span>VOL <b id="s-vol">—</b></span>
+      <span>BPM<b id="s-bpm">-</b></span>
+      <span id="rec-timer" style="display:none;color:#f87171;">0:00</span>
+    </div>
+  </div>
+ 
+  <div id="canvas-wrap">
+    <canvas id="c"></canvas>
+    <div id="overlay-info">VISUALIZER</div>
+    <div id="bpm-overlay">-</div>
+    <div id="flash-overlay"></div>
+    <button id="new-btn">+ new track</button>
+    <div id="vu-meter">
+      <div class="vu-b" style="height:6px;background:#c084fc"></div>
+      <div class="vu-b" style="height:10px;background:#c084fc;opacity:.7"></div>
+      <div class="vu-b" style="height:5px;background:#c084fc;opacity:.5"></div>
+    </div>
+  </div>
+ 
+  <div id="player-bar">
+    <audio id="audio" controls></audio>
+  </div>
+ 
+  <div id="ctrl-panel">
+    <div class="cg">
+      <label>Mode</label>
+      <select id="mode-sel">
+        <option value="bars">Bars</option>
+        <option value="fatbars">Fat bars</option>
+        <option value="mirror">Mirror</option>
+        <option value="wave">Wave</option>
+        <option value="dualwave">Dual wave</option>
+        <option value="filledwave">Filled wave</option>
+        <option value="radial">Radial spikes</option>
+        <option value="radialsolid">Radial filled</option>
+        <option value="lines">H-Lines</option>
+        <option value="dots">Dot grid</option>
+        <option value="blocks">Block grid</option>
+        <option value="scope">Oscilloscope</option>
+        <option value="waterfall">Waterfall</option>
+        <option value="starburst">Starburst</option>
+      </select>
+    </div>
+ 
+    <div class="cg">
+      <label>Color</label>
+      <div id="swatches">
+        <div class="sw on"  data-s="spectrum" style="background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red)" title="Spectrum"></div>
+        <div class="sw"     data-s="purple"   style="background:linear-gradient(135deg,#a855f7,#e879f9)" title="Purple"></div>
+        <div class="sw"     data-s="cyan"     style="background:linear-gradient(135deg,#06b6d4,#7dd3fc)" title="Cyan"></div>
+        <div class="sw"     data-s="fire"     style="background:linear-gradient(135deg,#dc2626,#f97316,#fbbf24)" title="Fire"></div>
+        <div class="sw"     data-s="mint"     style="background:linear-gradient(135deg,#059669,#6ee7b7)" title="Mint"></div>
+        <div class="sw"     data-s="rose"     style="background:linear-gradient(135deg,#e11d48,#fb7185)" title="Rose"></div>
+        <div class="sw"     data-s="mono"     style="background:linear-gradient(135deg,#334155,#cbd5e1)" title="Mono"></div>
+        <div class="sw"     data-s="gold"     style="background:linear-gradient(135deg,#b45309,#fde68a)" title="Gold"></div>
+        <div class="sw"     data-s="neon"     style="background:linear-gradient(135deg,#4ade80,#facc15,#f472b6)" title="Neon"></div>
+      </div>
+    </div>
+ 
+    <div class="cg">
+      <label>Bars</label>
+      <input type="range" id="bar-count" min="16" max="512" value="128" step="4" style="width:75px;">
+      <span class="sv" id="sv-bars">128</span>
+    </div>
+ 
+    <div class="cg">
+      <label>Sensitivity</label>
+      <input type="range" id="gain" min="0.5" max="8" value="2.5" step="0.1" style="width:70px;">
+      <span class="sv" id="sv-gain">2.5</span>
+    </div>
+ 
+    <div class="cg">
+      <label>Smooth</label>
+      <input type="range" id="smooth" min="0" max="0.97" value="0.8" step="0.01" style="width:65px;">
+      <span class="sv" id="sv-smooth">0.8</span>
+    </div>
+ 
+    <div class="cg">
+      <label>Line W</label>
+      <input type="range" id="line-w" min="1" max="12" value="2" step="0.5" style="width:60px;">
+      <span class="sv" id="sv-lw">2</span>
+    </div>
+ 
+    <div class="cg" style="gap:5px;">
+      <label>FX</label>
+      <button class="tbtn on"  id="fx-glow">Glow</button>
+      <button class="tbtn on"  id="fx-trail">Trail</button>
+      <button class="tbtn"     id="fx-peak">Peaks</button>
+      <button class="tbtn"     id="fx-mirror">Flip X</button>
+      <button class="tbtn"     id="fx-grid">Grid</button>
+      <button class="tbtn"     id="fx-pulse">Pulse BG</button>
+      <button class="tbtn"     id="fx-rotate">Rotate</button>
+    </div>
+ 
+    <div class="cg">
+      <label>BG</label>
+      <select id="bg-sel">
+        <option value="black">Black</option>
+        <option value="darkblue">Dark blue</option>
+        <option value="purple">Deep purple</option>
+        <option value="void">Pure void</option>
+      </select>
+    </div>
+  </div>
+</div>
+<script src="script.js"></script>
+</body>
+
+</html>
