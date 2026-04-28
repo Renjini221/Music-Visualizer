@@ -504,7 +504,7 @@ document.addEventListener('keydown',e=>{
         break;
      
       case 'KeyX':
-        FX.mirror=!FX.mirror:
+        FX.mirror=!FX.mirror;
         $('fx-mirror').classList.toggle('on',FX.mirror);
         break;
       case 'KeyR':
