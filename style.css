@@ -324,13 +324,13 @@ input[type=range]::-moz-range-thumb {
 
 #swatches {
     display: flex;
-    gap: 5px;
+     gap:5px;
 }
 
 .sw {
     width: 20px;
     height: 20px;
-    border-radius: 50%;
+    border: radius 50%;
     border: 2px solid transparent;
     cursor: pointer;
     transition: transform 0.15s, border-color 0.15s;
@@ -347,7 +347,7 @@ input[type=range]::-moz-range-thumb {
 }
 
 .sv {
-    font-size: 10px;
+    font-size:10px;
     color: var(--muted);
     min-width: 22px;
     text-align: right;
@@ -376,4 +376,14 @@ input[type=range]::-moz-range-thumb {
     background:#fff;
     pointer-events:none;
     z-index:10;
+}
+#kb-hint{
+    font-size:10px;
+    color:var(--muted);
+    letter-spacing:0.06em;
+    text-align:center;
+    padding:6px 18px 10px;
+    opacity:0.55;
+    background:rgba(10,10,18,0.99);
+    border-top:1px solid var(--border);
 }
