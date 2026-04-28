@@ -495,7 +495,7 @@ document.addEventListener('keydown',e=>{
 
       case 'KeyP':
         FX.pulse=!FX.pulse;
-        $('fx-pulse').classList.toggle('on',FX.pulse):
+        $('fx-pulse').classList.toggle('on',FX.pulse);
         break;
 
       case 'KeyK':
