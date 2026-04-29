@@ -291,7 +291,7 @@ input[type=range]::-webkit-slider-thumb:hover {
 input[type=range]::-moz-range-thumb {
     width: 13px;
     height: 13px;
-    border-radius: 50%;
+    border-radius: 10%;
     background: var(--accent);
     border: none;
     cursor: pointer;
@@ -301,7 +301,7 @@ input[type=range]::-moz-range-thumb {
     background: rgba(255, 255, 255, 0.04);
     color: var(--muted);
     border: 1px solid var(--border);
-    border-radius: 7px;
+  
     padding: 4px 10px;
     font-family: 'DM Mono', monospace;
     font-size: 10px;
@@ -324,13 +324,13 @@ input[type=range]::-moz-range-thumb {
 
 #swatches {
     display: flex;
-    gap: 5px;
+     gap:5px;
 }
 
 .sw {
     width: 20px;
     height: 20px;
-    border-radius: 50%;
+    border: radius 50%;
     border: 2px solid transparent;
     cursor: pointer;
     transition: transform 0.15s, border-color 0.15s;
@@ -347,7 +347,7 @@ input[type=range]::-moz-range-thumb {
 }
 
 .sv {
-    font-size: 10px;
+    font-size:10px;
     color: var(--muted);
     min-width: 22px;
     text-align: right;
@@ -355,7 +355,7 @@ input[type=range]::-moz-range-thumb {
 #bpm-overlay{
     position:absolute;
     top:14px;
-    left:50%;
+    left: 50%;
     transform:translateX(-50%);
     font-family:'Syne',sans-serif;
     font-size:22px;
@@ -376,4 +376,56 @@ input[type=range]::-moz-range-thumb {
     background:#fff;
     pointer-events:none;
     z-index:10;
+}
+#kb-hint{
+    font-size:10px;
+    color:var(--muted);
+    letter-spacing:0.06em;
+    text-align:center;
+    padding:6px 18px 10px;
+    opacity:0.55;
+    background:rgba(10,10,18,0.99);
+    border-top:1px solid var(--border);
+}
+#rec-badge{
+    display:none;
+    position:fixed;
+    top:14px;
+    left:14px;
+    transform:translateX(-50%);
+    background:rgba(239,68,68,0.88);
+    color:#fff;
+    font-family:'DM Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    padding:4px 14px;
+    z-index:999;
+    animation:blink 1s infinite;
+}
+@keyframes blink{
+    0%,100%{
+        opacity:1;
+    }
+    50%{
+        opacity:0.68;
+    }
+}
+#toast{
+    display:none;
+    position:fixed;
+    bottom:80px;
+    left:50%;
+    transform:translateX(-50%);
+    background:rgba(192,132,252,0.28);
+    border:1px solid rgba(192,132,252,0.28);
+    color:#e8e8f0;
+    font-family:'DM Mono',monospace;
+    font-size:12px;
+    padding:8px 18px;
+    
+    z-index:999;
+    backdrop-filter:blur(8px);
+    pointer-events:none;
+    white-space:nowrap;
+     
 }

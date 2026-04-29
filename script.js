@@ -43,6 +43,8 @@ function loadFile(file) {
   $('track-name').textContent = file.name.replace(/\.[^.]+$/, '').toUpperCase();
   dropScreen.style.display = 'none';
   vizScreen.style.display  = 'flex';
+  bpmTimes=[];
+  detectedBPM=0;
   setTimeout(() => { resize(); if (!animId) draw(); }, 60);
 }
  
@@ -401,7 +403,10 @@ beatFlash=Math.max(0,beatFlash-0.08);
   if (FX.rotate && (mode==='radial'||mode==='radialsolid'||mode==='starburst')) ctx.restore();
   ctx.shadowBlur = 0;
  
-  
+  if(flashAlpha>0){
+    ctx.fillStyle=`rgba(255,255,255,${flashAlpha})`;
+    ctx.fillRect(0,0,W,H);
+  }
   const vBars = document.querySelectorAll('.vu-b');
   const v0 = avgVol;
   const vuColor = v0>75 ? '#f87171' : v0>45 ? '#fbbf24' : '#c084fc';
@@ -422,9 +427,9 @@ function detectBeat(bassVol){
         gaps.push(bpmTimes[i]-bpmTimes[i-1]);
         const avg=gaps.reduce((a,b)=>a+b,0)/gaps.length;
         detectedBPM=Math.round(60000/avg);
-        if(detectedBPM>40&&detected<220){
+        if(detectedBPM>40&&detectedBPM<220){
           $('s-bpm').textContent=detectedBPM;
-          $('bpm-overlay').textContent=detectedBPM+'BPM';
+          $('bpm-overlay').textContent=detectedBPM+' BPM';
         }
     }
     beatFlash=1;
@@ -435,3 +440,162 @@ function detectBeat(bassVol){
   }
   lastBeatVol=bassVol;
 }
+const modeList=[
+  'bars','fatbars','mirror','wave','dualwave','filledwave',
+  'radial','radialsolid','lines','dots','blocks','scope','waterfall','starburst'
+
+];
+
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;
+
+  switch(e.code){
+
+    case'Space':{
+    e.preventDefault();
+    audio.paused?audio.play():audio.pause();
+    break;
+  }
+     case 'ArrowRight':{
+      const idx=(modeList.indexOf($('mode-sel').value)+1)%modeList.length;
+      $('mode-sel').value=modeList[idx];
+      $('mode-sel').dispatchEvent(new Event('change'));
+      break;
+
+     }
+     case 'ArrowLeft':{
+      const idx =(modeList.indexOf($('mode-sel').value)-1+modeList.length)%modeList.length;
+      $('mode-sel').value=modeList[idx];
+      $('mode-sel').dispatchEvent(new Event('change'));
+      break;
+     }
+     case 'ArrowUp':{
+     e.preventDefault();
+    const g=Math.min(8,parseFloat($('gain').value)+0.5);
+     $('gain').value=g;
+     $('sv-gain').textContent=g.toFixed(1);
+     break;
+  }
+    case 'ArrowDown':{
+      e.preventDefault();
+      const g=Math.max(0.5,parseFloat($('gain').value)-0.5);
+      $('gain').value=g;
+      $('sv-gain').textContent=g.toFixed(1);
+      break;
+     }
+     case 'KeyG':
+     FX.glow=!FX.glow;
+     $('fx-glow').classList.toggle('on',FX.glow);
+     break;
+
+     case 'KeyT':
+      FX.trail=!FX.trail;
+      $('fx-trail').classList.toggle('on',FX.trail);
+      break;
+
+      case 'KeyP':
+        FX.pulse=!FX.pulse;
+        $('fx-pulse').classList.toggle('on',FX.pulse);
+        break;
+
+      case 'KeyK':
+        FX.peak=!FX.peak;
+        $('fx-peak').classList.toggle('on',FX.peak);
+        break;
+     
+      case 'KeyX':
+        FX.mirror=!FX.mirror;
+        $('fx-mirror').classList.toggle('on',FX.mirror);
+        break;
+      case 'KeyR':
+        FX.rotate= !FX.rotate;
+        $('fx-rotate').classList.toggle('on',FX.rotate);
+        break;
+      case 'KeyS':
+        snapshot();
+        break;  
+      case 'KeyM':{
+        const swatches=['spectrum','purple','cyan','fire','mint','rose','mono','gold','neon'];
+        const idx=(swatches.indexOf(scheme)+1)%swatches.length;
+        scheme=swatches[idx];
+        document.querySelectorAll('.sw').forEach(s=>s.classList.remove('on'));
+        document.querySelector(`.sw[data-s="${scheme}"]`).classList.add('on');
+        break;
+      }  
+
+      default:{
+        const n=parseInt(e.key);
+        if(!isNaN(n)&&n>=0&&n<modeList.length){
+          $('mode-sel').value=modeList[n];
+          $('mode-sel').dispatchEvent(new Event('change'));
+        }
+        }
+      }       
+})
+function toast(msg,dur=2000){
+  const t=$('toast');
+  t.textContent=msg;
+  t.style.display='block';
+  clearTimeout(t._tid);
+  t._tid=setTimeout(()=>{t.style.display='none';},dur);
+}
+let mediaRec=null,recChunks=[],recStartTime=0,recTimerInterval=null;
+function startRec(){
+  if(!ac){
+    toast('Play audio first');
+    return;
+  }
+  const stream=canvas.captureStream(60);
+  const dest=ac.createMediaStreamDestination();
+  analyser.connect(dest);
+  dest.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
+  const mime=[
+    'video/webm;codecs=vp9,opus',
+    'video/webm;codecs=vp8,opus',
+    'video/webm'
+  ].find(m=>MediaRecorder.isTypeSupported(m))||'video/webm';
+  mediaRec=new MediaRecorder(stream,{mimeType:mime});
+  recChunks=[];
+  mediaRec.ondataavailable=e=>{if(e.data.size>0)recChunks.push(e.data);};
+  mediaRec.onstop=()=>{
+    const blob=new Blob(recChunks,{type:mime});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=($('track-name').textContent||'viz')+'.webm';
+    a.click();
+    $('rec-badge').style.display='none';
+    $('btn-rec').textContent='record';
+    $('btn-rec').classList.remove('on');
+    $('rec-timer').style.display='none';
+    clearInterval(recTimerInterval);
+    toast('Recording Saved');
+  };
+   mediaRec.start(100);
+   recStartTime=Date.now();
+   recTimerInterval=setInterval(()=>{
+    const s=Math.floor((Date.now()- recStartTime)/1000);
+    const m=Math.floor(s/60),sec=s%60;
+    $('rec-timer').textContent=`${m}:${sec.toString().padStart(2,'0')}`;
+   },500);
+   $('rec-badge').style.display='block';
+   $('btn-rec').textContent='stop';
+   $('btn-rec').classList.add('on');
+   $('rec-timer').style.display='inline';
+   toast('Recording started');
+   }
+   function stopRec(){
+    if(mediaRec&&mediaRec.state!=='inactive')mediaRec.stop();
+
+   }
+   $('btn-rec').addEventListener('click',()=>{
+    mediaRec&&mediaRec.state==='recording'?stopRec():startRec();
+   });
+   function snapshot(){
+    const a = document.createElement('a');
+    a.href=canvas.toDataURL('image/png');
+    a.download=($('track-name').textContent||'viz')+'.png';
+    a.click();
+    toast('Snapshot saved');
+
+   }
+   $('btn-snap').addEventListener('click',snapshot);
