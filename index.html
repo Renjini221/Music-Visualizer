@@ -36,7 +36,10 @@
       <span>VOL <b id="s-vol">—</b></span>
       <span>BPM<b id="s-bpm">-</b></span>
       <span id="rec-timer" style="display:none;color:#f87171;">0:00</span>
+
     </div>
+    <div id="rec-badge">rec</div>
+    <div id="toast"></div>
   </div>
  
   <div id="canvas-wrap">
@@ -56,7 +59,8 @@
     <audio id="audio" controls></audio>
   </div>
  
-  <div id="ctrl-panel">
+  <div id="ctrl-panel" >
+   
     <div class="cg">
       <label>Mode</label>
       <select id="mode-sel">
@@ -125,6 +129,12 @@
       <button class="tbtn"     id="fx-grid">Grid</button>
       <button class="tbtn"     id="fx-pulse">Pulse BG</button>
       <button class="tbtn"     id="fx-rotate">Rotate</button>
+    </div>
+    <div class="cg" style="gap:5px;">
+      <label>Actions</label>
+        <label>Actions</label>
+    <button class="tbtn" id="btn-rec">Record</button>
+    <button class="tbtn" id="btn-snap">snapshot</button>
     </div>
  
     <div class="cg">
