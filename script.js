@@ -45,6 +45,7 @@ function loadFile(file) {
   vizScreen.style.display  = 'flex';
   bpmTimes=[];
   detectedBPM=0;
+  if(window.logTrack) logTrack(file.name);
   setTimeout(() => { resize(); if (!animId) draw(); }, 60);
 }
  
@@ -154,6 +155,9 @@ detectBeat(bassAvg);
 flashAlpha=Math.max(0,flashAlpha-0.04);
 beatFlash=Math.max(0,beatFlash-0.08);
  
+if(window.logFrame) logFrame();
+if(window.logVolume) logVolume(avgVol);
+
   if (peaks && peaks.length === nbars) {
     for (let i=0;i<nbars;i++) {
       if (bins[i] > peaks[i]) { peaks[i]=bins[i]; peakHold[i]=55; }
@@ -433,6 +437,7 @@ function detectBeat(bassVol){
         }
     }
     beatFlash=1;
+    if(window.logBeat)logBeat(detectedBPM);
     $('bpm-overlay').classList.add('beat');
     setTimeout(()=>$('bpm-overlay').classList.remove('beat'),80);
     flashAlpha=0.18;
@@ -542,7 +547,7 @@ function toast(msg,dur=2000){
 let mediaRec=null,recChunks=[],recStartTime=0,recTimerInterval=null;
 function startRec(){
   if(!ac){
-    toast('Play audio first');
+   toast('play audio first');
     return;
   }
   const stream=canvas.captureStream(60);
@@ -595,7 +600,7 @@ function startRec(){
     a.href=canvas.toDataURL('image/png');
     a.download=($('track-name').textContent||'viz')+'.png';
     a.click();
-    toast('Snapshot saved');
+    toast('snapshot saved')
 
    }
    $('btn-snap').addEventListener('click',snapshot);
