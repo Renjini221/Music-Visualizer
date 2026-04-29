@@ -476,7 +476,7 @@ document.addEventListener('keydown',e=>{
      $('sv-gain').textContent=g.toFixed(1);
      break;
   }
-     case 'ArrowDown':{
+    case 'ArrowDown':{
       e.preventDefault();
       const g=Math.max(0.5,parseFloat($('gain').value)-0.5);
       $('gain').value=g;
@@ -511,6 +511,9 @@ document.addEventListener('keydown',e=>{
         FX.rotate= !FX.rotate;
         $('fx-rotate').classList.toggle('on',FX.rotate);
         break;
+      case 'KeyS':
+        snapshot();
+        break;  
       case 'KeyM':{
         const swatches=['spectrum','purple','cyan','fire','mint','rose','mono','gold','neon'];
         const idx=(swatches.indexOf(scheme)+1)%swatches.length;
@@ -529,3 +532,70 @@ document.addEventListener('keydown',e=>{
         }
       }       
 })
+function toast(msg,dur=2000){
+  const t=$('toast');
+  t.textContent=msg;
+  t.style.display='block';
+  clearTimeout(t._tid);
+  t._tid=setTimeout(()=>{t.style.display='none';},dur);
+}
+let mediaRec=null,recChunks=[],recStartTime=0,recTimerInterval=null;
+function startRec(){
+  if(!ac){
+    toast('Play audio first');
+    return;
+  }
+  const stream=canvas.captureStream(60);
+  const dest=ac.createMediaStreamDestination();
+  analyser.connect(dest);
+  dest.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
+  const mime=[
+    'video/webm;codecs=vp9,opus',
+    'video/webm;codecs=vp8,opus',
+    'video/webm'
+  ].find(m=>MediaRecorder.isTypeSupported(m))||'video/webm';
+  mediaRec=new MediaRecorder(stream,{mimeType:mime});
+  recChunks=[];
+  mediaRec.ondataavailable=e=>{if(e.data.size>0)recChunks.push(e.data);};
+  mediaRec.onstop=()=>{
+    const blob=new Blob(recChunks,{type:mime});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=($('track-name').textContent||'viz')+'.webm';
+    a.click();
+    $('rec-badge').style.display='none';
+    $('btn-rec').textContent='record';
+    $('btn-rec').classList.remove('on');
+    $('rec-timer').style.display='none';
+    clearInterval(recTimerInterval);
+    toast('Recording Saved');
+  };
+   mediaRec.start(100);
+   recStartTime=Date.now();
+   recTimerInterval=setInterval(()=>{
+    const s=Math.floor((Date.now()- recStartTime)/1000);
+    const m=Math.floor(s/60),sec=s%60;
+    $('rec-timer').textContent=`${m}:${sec.toString().padStart(2,'0')}`;
+   },500);
+   $('rec-badge').style.display='block';
+   $('btn-rec').textContent='stop';
+   $('btn-rec').classList.add('on');
+   $('rec-timer').style.display='inline';
+   toast('Recording started');
+   }
+   function stopRec(){
+    if(mediaRec&&mediaRec.state!=='inactive')mediaRec.stop();
+
+   }
+   $('btn-rec').addEventListener('click',()=>{
+    mediaRec&&mediaRec.state==='recording'?stopRec():startRec();
+   });
+   function snapshot(){
+    const a = document.createElement('a');
+    a.href=canvas.toDataURL('image/png');
+    a.download=($('track-name').textContent||'viz')+'.png';
+    a.click();
+    toast('Snapshot saved');
+
+   }
+   $('btn-snap').addEventListener('click',snapshot);
