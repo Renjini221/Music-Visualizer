@@ -1,7 +1,7 @@
 const ANALYTICS_KEY = `viz-analytics`
 const SESSION_ID = Date.now().toString(36) + Math.random().toString(36).slice(2)
 
-let analyticsData = loadAnalytics()
+let analyticsData = load()
 let sessionStart = Date.now()
 let currentTrackStart = null
 let currentTrackName = null
@@ -10,7 +10,7 @@ let lastFrame = Date.now(), frameCount = 0
 let modeCounts = {}, colorCounts = {}, fxCounts = {}
 let trackHistory = [], bpmLog = []
 
-function loadAnalytics() {
+function load() {
     try {
         const raw = localStorage.getItem(ANALYTICS_KEY)
         return raw ? JSON.parse(raw) : {
@@ -33,7 +33,7 @@ function loadAnalytics() {
 }
 
 
-function saveAnalytics() {
+function save() {
     try {
       localStorage.setItem(ANALYTICS_KEY, JSON.stringify(analyticsData))
     } catch(e) {}  // whatever
@@ -48,14 +48,14 @@ function logBeat(bpm) {
     }
 }
 
-function logVolume(vol) {
+function volcheck(vol) {
     if (vol > peakVol) peakVol = vol
     if (vol > analyticsData.peakVolumeAllTime) {
       analyticsData.peakVolumeAllTime = vol
     }
 }
 
-function logFrame() {
+function tick() {
     const now = Date.now()
     const fps = 1000 / (now - lastFrame)
     avgFPS = avgFPS * 0.95 + fps * 0.05
@@ -74,7 +74,7 @@ function logTrack(name) {
     }
     currentTrackName = name
     currentTrackStart = now
-    saveAnalytics()
+    save()
 }
 
 function logMode(mode) {
@@ -82,7 +82,7 @@ function logMode(mode) {
     analyticsData.modeCounts[mode] = (analyticsData.modeCounts[mode] || 0) + 1
     analyticsData.favoriteMode = Object.keys(analyticsData.modeCounts)
         .sort((a, b) => analyticsData.modeCounts[b] - analyticsData.modeCounts[a])[0]
-    saveAnalytics()
+    save()
 }
 
 function logColor(color) {
@@ -90,13 +90,13 @@ function logColor(color) {
     analyticsData.colorCounts[color] = (analyticsData.colorCounts[color] || 0) + 1
     analyticsData.favoriteColor = Object.keys(analyticsData.colorCounts)
         .sort((a, b) => analyticsData.colorCounts[b] - analyticsData.colorCounts[a])[0]
-    saveAnalytics()
+    save()
 }
 
 function logFX(name) {
     fxCounts[name] = (fxCounts[name] || 0) + 1
     analyticsData.fxUsage[name] = (analyticsData.fxUsage[name] || 0) + 1
-    saveAnalytics()
+    save()
 }
 
 function getReport() {
@@ -121,7 +121,7 @@ function endSession() {
     analyticsData.sessions.push(report)
     analyticsData.sessionCount++
     if (analyticsData.sessions.length > 50) analyticsData.sessions.shift()
-    saveAnalytics()
+    save()
 }
 
 document.addEventListener(`DOMContentLoaded`, () => {
@@ -132,7 +132,7 @@ document.addEventListener(`DOMContentLoaded`, () => {
 })
 
 window.logBeat = logBeat
-window.logVolume = logVolume
-window.logFrame = logFrame
+window.volcheck = volcheck
+window.tick = tick
 window.logTrack = logTrack
 window.getReport = getReport
