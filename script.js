@@ -34,11 +34,11 @@ dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classL
 dropZone.addEventListener('dragleave',() => dropZone.classList.remove('drag-over'));
 dropZone.addEventListener('drop', e => {
   e.preventDefault(); dropZone.classList.remove('drag-over');
-  if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+  if (e.dataTransfer.files[0]) filo(e.dataTransfer.files[0]);
 });
-fileInput.addEventListener('change', () => { if (fileInput.files[0]) loadFile(fileInput.files[0]); });
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) filo(fileInput.files[0]); });
  
-function loadFile(file) {
+function filo(file) {
   audio.src = URL.createObjectURL(file);
   $('track-name').textContent = file.name.replace(/\.[^.]+$/, '').toUpperCase();
   dropScreen.style.display = 'none';
@@ -50,7 +50,7 @@ function loadFile(file) {
 }
  
 
-function initAC() {
+function setaud() {
   if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
   ac = new (window.AudioContext || window.webkitAudioContext)();
   const src = ac.createMediaElementSource(audio);
@@ -65,7 +65,7 @@ function initAC() {
   analyser.connect(ac.destination);
   if (ac.state === 'suspended') ac.resume();
 }
-audio.addEventListener('play', initAC);
+audio.addEventListener('play', setaud);
  
 
 document.querySelectorAll('.sw').forEach(s => s.addEventListener('click', () => {
@@ -73,14 +73,14 @@ document.querySelectorAll('.sw').forEach(s => s.addEventListener('click', () => 
   s.classList.add('on'); scheme = s.dataset.s;
 }));
  
-function syncSlider(id, outId, decimals) {
+function sli(id, outId, decimals) {
   const el = $(id), out = $(outId);
   el.addEventListener('input', () => { out.textContent = parseFloat(el.value).toFixed(decimals); });
 }
-syncSlider('bar-count','sv-bars',0);
-syncSlider('gain','sv-gain',1);
-syncSlider('smooth','sv-smooth',2);
-syncSlider('line-w','sv-lw',1);
+sli('bar-count','sv-bars',0);
+sli('gain','sv-gain',1);
+sli('smooth','sv-smooth',2);
+sli('line-w','sv-lw',1);
  
 $('bar-count').addEventListener('input', () => { $('s-bars').textContent = $('bar-count').value; });
 $('smooth').addEventListener('input', () => { if (analyser) analyser.smoothingTimeConstant = parseFloat($('smooth').value); });
@@ -151,7 +151,7 @@ function draw() {
   $('s-vol').textContent  = Math.round(avgVol)+'%';
   $('s-mode').textContent = mode.toUpperCase();
 
-detectBeat(bassAvg);
+becheck(bassAvg);
 flashAlpha=Math.max(0,flashAlpha-0.04);
 beatFlash=Math.max(0,beatFlash-0.08);
  
@@ -277,7 +277,7 @@ if(window.logVolume) logVolume(avgVol);
     if (mode==='wave') drawWave(0, H*0.44, 1, false);
     if (mode==='dualwave') { drawWave(0, H*0.44, 1, false); drawWave(0, -H*0.44, 0.4, false); }
     if (mode==='filledwave') { drawWave(0, H*0.44, 1, true); drawWave(0, -H*0.44, 0.5, true); }
- 
+ // idk why this works but it does
   } else if (mode === 'radial' || mode === 'radialsolid') {
     const cx=W/2, cy=H/2;
     const r0 = Math.min(W,H)*0.12;
@@ -420,7 +420,7 @@ if(window.logVolume) logVolume(avgVol);
     vBars[i].style.opacity  = op;
   });
 }
-function detectBeat(bassVol){
+function becheck(bassVol){
   const now=performance.now();
   if(bassVol>0.6&&bassVol>lastBeatVol*1.3){
     bpmTimes.push(now);
@@ -517,7 +517,7 @@ document.addEventListener('keydown',e=>{
         $('fx-rotate').classList.toggle('on',FX.rotate);
         break;
       case 'KeyS':
-        snapshot();
+        snapt();
         break;  
       case 'KeyM':{
         const swatches=['spectrum','purple','cyan','fire','mint','rose','mono','gold','neon'];
@@ -545,7 +545,7 @@ function toast(msg,dur=2000){
   t._tid=setTimeout(()=>{t.style.display='none';},dur);
 }
 let mediaRec=null,recChunks=[],recStartTime=0,recTimerInterval=null;
-function startRec(){
+function Rec(){
   if(!ac){
    toast('play audio first');
     return;
@@ -593,14 +593,14 @@ function startRec(){
 
    }
    $('btn-rec').addEventListener('click',()=>{
-    mediaRec&&mediaRec.state==='recording'?stopRec():startRec();
+    mediaRec&&mediaRec.state==='recording'?stopRec():Rec();
    });
-   function snapshot(){
+   function snap(){
     const a = document.createElement('a');
     a.href=canvas.toDataURL('image/png');
     a.download=($('track-name').textContent||'viz')+'.png';
     a.click();
-    toast('snapshot saved')
+    toast('snap saved')
 
    }
-   $('btn-snap').addEventListener('click',snapshot);
+   $('btn-snap').addEventListener('click',snap);
