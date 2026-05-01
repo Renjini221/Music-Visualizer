@@ -155,8 +155,8 @@ becheck(bassAvg);
 flashAlpha=Math.max(0,flashAlpha-0.04);
 beatFlash=Math.max(0,beatFlash-0.08);
  
-if(window.logFrame) logFrame();
-if(window.logVolume) logVolume(avgVol);
+if(window.tick) tick();
+if(window.volcheck) volcheck(avgVol);
 
   if (peaks && peaks.length === nbars) {
     for (let i=0;i<nbars;i++) {
